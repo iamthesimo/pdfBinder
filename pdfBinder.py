@@ -1,9 +1,19 @@
+'''
+----------------------------- APP IDENTIFICATION --------------------------
+    module:      pdfBinder
+    file:        pdfBinder.py   
+    date:        25 July 2023
+    version:     1.0
+    author:      Simone Santonoceto
+------------------------------ APP DESCRIPTION ----------------------------
+pdfBinder is the perfect tool for anyone who needs to attach files to PDF
+'''
+
 from tkinter import *
 from tkinter import filedialog, messagebox, ttk
 
 from tkinter.filedialog import asksaveasfilename
 from pypdf import PdfWriter, PdfReader
-import pypdf
 
 
 class PdfAttachmentApp:
@@ -16,8 +26,14 @@ class PdfAttachmentApp:
         """
         self.master = master
         padding = 5
-        master.title("Pdf Attachment")
+        master.title("pdfBinder")
         master.resizable(False, False)
+        
+        
+        # Help menu   
+        self.help = Menu(self.master, tearoff=0)  
+        # help.add_command(label="About", command=self.showAbout) 
+        
         self.source_pdf_label = Label(master, text="Source PDF:", width=15)
         self.source_pdf_label.grid(row=0, column=0)
 
@@ -100,8 +116,9 @@ class PdfAttachmentApp:
         """
         Opens a file dialog to select an attachment PDF file.
         """
+        filetypes = [("PDF files", "*.pdf"), ("All files", "*.*")]
         attachment_filename = filedialog.askopenfilenames(
-            title="Select Attachment PDF", filetypes=[("PDF files", "*.pdf")]
+            title="Select Attachment", filetypes=filetypes
         )
         try:
             if attachment_filename:
