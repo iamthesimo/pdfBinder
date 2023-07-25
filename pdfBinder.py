@@ -1,4 +1,4 @@
-'''
+"""
 ----------------------------- APP IDENTIFICATION --------------------------
     module:      pdfBinder
     file:        pdfBinder.py   
@@ -7,7 +7,7 @@
     author:      Simone Santonoceto
 ------------------------------ APP DESCRIPTION ----------------------------
 pdfBinder is the perfect tool for anyone who needs to attach files to PDF
-'''
+"""
 
 from tkinter import *
 from tkinter import filedialog, messagebox, ttk
@@ -16,16 +16,16 @@ from tkinter.filedialog import asksaveasfilename
 from pypdf import PdfWriter, PdfReader
 
 
-        
 def copy_bookmark(destination, bookmarks):
-    '''Copy bookmarks from source to destination'''
-    ''' Right now is only copying the bookmark but the link is not working'''
+    """Copy bookmarks from source to destination"""
+    """ Right now is only copying the bookmark but the link is not working"""
     for bookmark in bookmarks:
         if isinstance(bookmark, dict):
             destination.add_outline_item_dict(bookmark)
         else:
-            copy_bookmark(destination, bookmark)  
-            
+            copy_bookmark(destination, bookmark)
+
+
 class PdfAttachmentApp:
     """Class implementation of SteINTE - BLE ATE application"""
 
@@ -37,9 +37,11 @@ class PdfAttachmentApp:
     __ABOUT_SHORT_TXT__ = f"Version{__APPLICATION_VERSION__} {__APPLICATION_NAME__}"
     __DEVELOPER_NAME__ = "Simone Santonoceto"
     __DEVELOPER_CONTACTS__ = "simone.santonoceto@gmail.com"
-    __ABOUT_DETAILED_TXT__ = f"{__ABOUT_SHORT_TXT__}{__DEVELOPER_NAME__}{__DEVELOPER_CONTACTS__}"
+    __ABOUT_DETAILED_TXT__ = (
+        f"{__ABOUT_SHORT_TXT__}{__DEVELOPER_NAME__}{__DEVELOPER_CONTACTS__}"
+    )
     __APPLICATION_COPYRIGHT__ = "GNU GPL v3.0"
-    
+
     def __init__(self, master):
         """
         Initializes the PdfAttachmentApp class.
@@ -51,7 +53,7 @@ class PdfAttachmentApp:
         padding = 5
         master.title("pdfBinder")
         master.resizable(False, False)
-                
+
         self.source_pdf_label = ttk.Label(master, text="Source PDF:", width=15)
         self.source_pdf_label.grid(row=0, column=0)
 
@@ -86,7 +88,7 @@ class PdfAttachmentApp:
         self.attachment_listbox.bind("<Double-Button-1>", self.delete_attachment)
         self.attachment_listbox.bind("<Delete>", self.delete_attachment)
         self.attachment_listbox.bind("<BackSpace>", self.delete_attachment)
-        self.attachment_listbox.bind("<MouseWheel>", self.mousewheel)
+        self.attachment_listbox.bind("<MouseWheel>", self.mouse_wheel)
 
         self.generate_pdf_button = Button(
             master,
@@ -121,8 +123,8 @@ class PdfAttachmentApp:
         self.attachment_list = []
         self.source_pdf_filename = ""
         self.writer = None
-    
-    def mousewheel(self, event):
+
+    def mouse_wheel(self, event):
         self.attachment_listbox.yview_scroll(-1, "units")
 
     def select_source_pdf(self):
@@ -172,8 +174,8 @@ class PdfAttachmentApp:
 
     def delete_attachment(self, event):
         """Deletes the selected attachment PDF file."""
-        self.attachment_listbox.delete(ANCHOR)  
-                
+        self.attachment_listbox.delete(ANCHOR)
+
     def generate_pdf(self):
         """
         Generates a new PDF file with the selected source PDF file and attachment PDF files.
@@ -183,16 +185,10 @@ class PdfAttachmentApp:
                 messagebox.showerror("Error", "Please select a source PDF file")
                 return
             self.writer = PdfWriter()
-            self.writer.append_pages_from_reader(PdfReader(self.source_pdf_filename))
+            self.reader = PdfReader(self.source_pdf_filename)
 
-            bookmarks = (
-                PdfReader(self.source_pdf_filename).outline
-                if PdfReader(self.source_pdf_filename).outline
-                else None
-            )
+            self.writer.clone_document_from_reader(self.reader)
 
-            copy_bookmark(self.writer, bookmarks)
-            
             self.add_attachment()
             source_pdf = self.source_pdf_filename.rsplit("/", 1)[1]
             source_folder = self.source_pdf_filename.rsplit("/", 1)[0]
@@ -215,7 +211,8 @@ class PdfAttachmentApp:
             )
         except Exception as e:
             pass
-        
+
+
 root = Tk()
 my_gui = PdfAttachmentApp(root)
 root.mainloop()
