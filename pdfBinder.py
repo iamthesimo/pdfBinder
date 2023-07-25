@@ -16,7 +16,30 @@ from tkinter.filedialog import asksaveasfilename
 from pypdf import PdfWriter, PdfReader
 
 
+        
+def copy_bookmark(destination, bookmarks):
+    '''Copy bookmarks from source to destination'''
+    ''' Right now is only copying the bookmark but the link is not working'''
+    for bookmark in bookmarks:
+        if isinstance(bookmark, dict):
+            destination.add_outline_item_dict(bookmark)
+        else:
+            copy_bookmark(destination, bookmark)  
+            
 class PdfAttachmentApp:
+    """Class implementation of SteINTE - BLE ATE application"""
+
+    # Application constants
+    __APPLICATION_VERSION__ = "1.0.0"
+    __APPLICATION_NAME__ = "pdfBinder"
+    __APPLICATION_ICON__ = "pdf-icon.ico"
+    __ABOUT_IMAGE__ = "pdf-icon.ico"
+    __ABOUT_SHORT_TXT__ = f"Version{__APPLICATION_VERSION__} {__APPLICATION_NAME__}"
+    __DEVELOPER_NAME__ = "Simone Santonoceto"
+    __DEVELOPER_CONTACTS__ = "simone.santonoceto@gmail.com"
+    __ABOUT_DETAILED_TXT__ = f"{__ABOUT_SHORT_TXT__}{__DEVELOPER_NAME__}{__DEVELOPER_CONTACTS__}"
+    __APPLICATION_COPYRIGHT__ = "GNU GPL v3.0"
+    
     def __init__(self, master):
         """
         Initializes the PdfAttachmentApp class.
@@ -28,13 +51,8 @@ class PdfAttachmentApp:
         padding = 5
         master.title("pdfBinder")
         master.resizable(False, False)
-        
-        
-        # Help menu   
-        self.help = Menu(self.master, tearoff=0)  
-        # help.add_command(label="About", command=self.showAbout) 
-        
-        self.source_pdf_label = Label(master, text="Source PDF:", width=15)
+                
+        self.source_pdf_label = ttk.Label(master, text="Source PDF:", width=15)
         self.source_pdf_label.grid(row=0, column=0)
 
         self.source_pdf_entry = Entry(master, width=50)
@@ -66,6 +84,9 @@ class PdfAttachmentApp:
         self.attachment_listbox = Listbox(master, width=50)
         self.attachment_listbox.grid(row=1, column=1)
         self.attachment_listbox.bind("<Double-Button-1>", self.delete_attachment)
+        self.attachment_listbox.bind("<Delete>", self.delete_attachment)
+        self.attachment_listbox.bind("<BackSpace>", self.delete_attachment)
+        self.attachment_listbox.bind("<MouseWheel>", self.mousewheel)
 
         self.generate_pdf_button = Button(
             master,
@@ -100,6 +121,9 @@ class PdfAttachmentApp:
         self.attachment_list = []
         self.source_pdf_filename = ""
         self.writer = None
+    
+    def mousewheel(self, event):
+        self.attachment_listbox.yview_scroll(-1, "units")
 
     def select_source_pdf(self):
         """
@@ -148,8 +172,8 @@ class PdfAttachmentApp:
 
     def delete_attachment(self, event):
         """Deletes the selected attachment PDF file."""
-        self.attachment_listbox.delete(ANCHOR)
-
+        self.attachment_listbox.delete(ANCHOR)  
+                
     def generate_pdf(self):
         """
         Generates a new PDF file with the selected source PDF file and attachment PDF files.
@@ -160,14 +184,14 @@ class PdfAttachmentApp:
                 return
             self.writer = PdfWriter()
             self.writer.append_pages_from_reader(PdfReader(self.source_pdf_filename))
-            
-            # bookmarks = (
-            #     PdfReader(self.source_pdf_filename).outline
-            #     if PdfReader(self.source_pdf_filename).outline
-            #     else None
-            # )
-            # print(bookmarks)
-            # self.writer._clone_outline(self.source_pdf_filename.outline)
+
+            bookmarks = (
+                PdfReader(self.source_pdf_filename).outline
+                if PdfReader(self.source_pdf_filename).outline
+                else None
+            )
+
+            copy_bookmark(self.writer, bookmarks)
             
             self.add_attachment()
             source_pdf = self.source_pdf_filename.rsplit("/", 1)[1]
@@ -184,8 +208,6 @@ class PdfAttachmentApp:
             with open(destination_pdf, "wb") as f:
                 self.writer.write(f)
 
-            self.attachment_list = []
-            self.source_pdf_filename = ""
             self.writer = None
             messagebox.showinfo(
                 "PDF Generated",
@@ -193,8 +215,7 @@ class PdfAttachmentApp:
             )
         except Exception as e:
             pass
-
-
+        
 root = Tk()
 my_gui = PdfAttachmentApp(root)
 root.mainloop()
