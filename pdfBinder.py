@@ -9,125 +9,180 @@
 pdfBinder is the perfect tool for anyone who needs to attach files to PDF
 """
 
-from tkinter import *
+import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 
 from tkinter.filedialog import asksaveasfilename
 from pypdf import PdfWriter, PdfReader
 
 
-def copy_bookmark(destination, bookmarks):
-    """Copy bookmarks from source to destination"""
-    """ Right now is only copying the bookmark but the link is not working"""
-    for bookmark in bookmarks:
-        if isinstance(bookmark, dict):
-            destination.add_outline_item_dict(bookmark)
-        else:
-            copy_bookmark(destination, bookmark)
-
-
 class PdfAttachmentApp:
     """Class implementation of SteINTE - BLE ATE application"""
 
     # Application constants
+
     __APPLICATION_VERSION__ = "1.0.0"
     __APPLICATION_NAME__ = "pdfBinder"
     __APPLICATION_ICON__ = "pdf-icon.ico"
     __ABOUT_IMAGE__ = "pdf-icon.ico"
-    __ABOUT_SHORT_TXT__ = f"Version{__APPLICATION_VERSION__} {__APPLICATION_NAME__}"
+    __ABOUT_SHORT_TXT__ = f"{__APPLICATION_NAME__} V.{__APPLICATION_VERSION__}"
     __DEVELOPER_NAME__ = "Simone Santonoceto"
     __DEVELOPER_CONTACTS__ = "simone.santonoceto@gmail.com"
     __ABOUT_DETAILED_TXT__ = (
-        f"{__ABOUT_SHORT_TXT__}{__DEVELOPER_NAME__}{__DEVELOPER_CONTACTS__}"
+        f"{__ABOUT_SHORT_TXT__} {__DEVELOPER_NAME__} {__DEVELOPER_CONTACTS__}"
     )
     __APPLICATION_COPYRIGHT__ = "GNU GPL v3.0"
 
-    def __init__(self, master):
+    __APPLICATION_INFOS__ = "\n".join(
+        [
+            __ABOUT_SHORT_TXT__,
+            __DEVELOPER_NAME__,
+            __DEVELOPER_CONTACTS__,
+            __APPLICATION_COPYRIGHT__,
+        ]
+    )
+
+    def __init__(self, root):
         """
         Initializes the PdfAttachmentApp class.
 
         Args:
         - master: the Tkinter master object.
         """
-        self.master = master
-        padding = 5
-        master.title("pdfBinder")
-        master.resizable(False, False)
+        self.root = root
+        self.padding = 5
+        self.root.title("pdfBinder")
+        self.root.resizable(False, False)
 
-        self.source_pdf_label = ttk.Label(master, text="Source PDF:", width=15)
+        self.create_menu()
+        self.create_top_area()        
+
+    def create_top_area(self):
+        self.source_pdf_label = ttk.Label(root, text="Source PDF:", width=15)
         self.source_pdf_label.grid(row=0, column=0)
 
-        self.source_pdf_entry = Entry(master, width=50)
+        self.source_pdf_entry = tk.Entry(root, width=50)
         self.source_pdf_entry.grid(row=0, column=1)
 
-        self.source_pdf_button = Button(
-            master,
+        self.source_pdf_button = tk.Button(
+            root,
             text="Select file",
             command=self.select_source_pdf,
             width=15,
-            padx=padding,
-            pady=padding,
+            padx=self.padding,
+            pady=self.padding,
         )
         self.source_pdf_button.grid(row=0, column=2)
 
-        self.attachment_label = Label(master, text="Attachment PDF:", width=15)
+        self.attachment_label = tk.Label(root, text="Attachments:", width=15)
         self.attachment_label.grid(row=1, column=0)
 
-        self.attachment_button = Button(
-            master,
+        self.attachment_button = tk.Button(
+            root,
             text="Select file",
-            command=self.select_attachment,
+            command=self.select_attachments,
             width=15,
-            padx=padding,
-            pady=padding,
+            padx=self.padding,
+            pady=self.padding,
         )
         self.attachment_button.grid(row=1, column=2)
 
-        self.attachment_listbox = Listbox(master, width=50)
+        self.attachment_listbox = tk.Listbox(root, width=50)
         self.attachment_listbox.grid(row=1, column=1)
         self.attachment_listbox.bind("<Double-Button-1>", self.delete_attachment)
         self.attachment_listbox.bind("<Delete>", self.delete_attachment)
         self.attachment_listbox.bind("<BackSpace>", self.delete_attachment)
         self.attachment_listbox.bind("<MouseWheel>", self.mouse_wheel)
 
-        self.generate_pdf_button = Button(
-            master,
+        self.generate_pdf_button = tk.Button(
+            root,
             text="Generate PDF",
             command=self.generate_pdf,
             width=40,
-            padx=padding,
-            pady=padding,
+            padx=self.padding,
+            pady=self.padding,
+            state=tk.D,
         )
         self.generate_pdf_button.grid(row=4, column=1)
 
-        self.clear_attachments_button = Button(
-            master,
+        self.clear_attachments_button = tk.Button(
+            root,
             text="Clear Attachments",
             command=self.clear_attachments,
             width=15,
-            padx=padding,
-            pady=padding,
+            padx=self.padding,
+            pady=self.padding,
+            state=tk.NORMAL,
         )
         self.clear_attachments_button.grid(row=3, column=2)
 
-        self.clear_button = Button(
-            master,
+        self.clear_button = tk.Button(
+            root,
             text="Clear All",
             command=self.clear_all,
             width=15,
-            padx=padding,
-            pady=padding,
+            padx=self.padding,
+            pady=self.padding,
+            state=tk.NORMAL,
         )
         self.clear_button.grid(row=4, column=2)
 
         self.attachment_list = []
         self.source_pdf_filename = ""
         self.writer = None
+        
+        # Key bindings
+        self.root.bind("<F1>", self.on_help)
+        self.root.bind("<F2>", self.on_about)
+        self.root.bind("<Escape>", self.on_exit)
+        self.root.bind("<Return>", self.generate_pdf)
+        self.root.bind("<Control_L><s>", self.select_source_pdf)
+        self.root.bind("<Control_L><d>", self.clear_all)
+        self.root.bind("<Control_L><Shift_L><d>", self.clear_attachments)
+        self.root.bind("<Control_L><a>", self.select_attachments)
 
-    def mouse_wheel(self, event):
+    def mouse_wheel(self, event=None):
         self.attachment_listbox.yview_scroll(-1, "units")
 
-    def select_source_pdf(self):
+    def create_menu(self, event=None):
+        self.menu_bar = tk.Menu(self.root)
+        self.root.config(menu=self.menu_bar)
+
+        # File menu
+        self.file_menu = tk.Menu(self.menu_bar, tearoff=0)
+        self.menu_bar.add_cascade(label="File", menu=self.file_menu)
+        self.file_menu.add_command(label="Select PDF", command=self.select_source_pdf, accelerator="Ctrl+S")
+        self.file_menu.add_command(label="Select attachments", command=self.select_attachments, accelerator="Ctrl+A")
+        self.file_menu.add_separator()
+        self.file_menu.add_command(label="Generate PDF", command=self.generate_pdf, accelerator="Enter", state=tk.NORMAL)
+        self.file_menu.add_command(label="Clear attachments", command=self.clear_attachments,accelerator="Ctrl+D", state=tk.NORMAL)
+        self.file_menu.add_command(label="Clear all", command=self.clear_all, accelerator="Ctrl+Shift+D", state=tk.NORMAL)
+        self.file_menu.add_separator()
+        self.file_menu.add_command(label="Exit", command=self.on_exit, accelerator="Esc")
+
+        # Help menu
+        self.help_menu = tk.Menu(self.menu_bar, tearoff=0)
+        self.menu_bar.add_cascade(label="Help", menu=self.help_menu)
+        self.help_menu.add_command(label="Help", command=self.on_help, accelerator="F1")
+        self.help_menu.add_command(label="About", command=self.on_about)
+
+    def on_exit(self, event=None):
+        self.root.destroy()
+
+    def on_help(self, event=None):
+        help_text = """This is a simple app created with Python and Tkinter to attach files to PDF:\n
+  - Double click an attachment to delete it.
+  - Click an attachment and press backspace to remove it.
+  - Click an attachment and press delete to remove it.
+  - Clear all to clear the source and attachments.
+  - Clear attachments to clear the attachment."""
+        messagebox.showinfo("Help", help_text,type="ok")
+
+    def on_about(self, event=None):
+        about_text = self.__APPLICATION_INFOS__
+        messagebox.showinfo("About", about_text)
+
+    def select_source_pdf(self, event=None):
         """
         Opens a file dialog to select the source PDF file.
         """
@@ -135,10 +190,11 @@ class PdfAttachmentApp:
             title="Select Source PDF", filetypes=[("PDF files", "*.pdf")]
         )
         if self.source_pdf_filename:
-            self.source_pdf_entry.delete(0, END)
+            self.source_pdf_entry.delete(0, tk.END)
             self.source_pdf_entry.insert(0, self.source_pdf_filename.rsplit("/", 1)[1])
+        self.generate_pdf_button['state'] = tk.NORMAL
 
-    def select_attachment(self):
+    def select_attachments(self, event=None):
         """
         Opens a file dialog to select an attachment PDF file.
         """
@@ -150,11 +206,11 @@ class PdfAttachmentApp:
             if attachment_filename:
                 for attachment in attachment_filename:
                     self.attachment_list.append(attachment)
-                    self.attachment_listbox.insert(END, attachment.rsplit("/", 1)[1])
+                    self.attachment_listbox.insert(tk.END, attachment.rsplit("/", 1)[1])
         except Exception as e:
             pass
 
-    def add_attachment(self):
+    def add_attachment(self, event=None):
         """
         Adds the selected attachment PDF files to the writer object.
         """
@@ -162,21 +218,27 @@ class PdfAttachmentApp:
             for attachment_filename in self.attachment_list:
                 with open(attachment_filename, "rb") as pdf:
                     self.writer.add_attachment(attachment_filename, pdf.read())
+                
+        self.clear_attachments_button(0, state=tk.NORMAL)
+        self.file_menu.entryconfig(0, state=tk.NORMAL)
 
-    def clear_all(self):
+    def clear_all(self, event=None):
         """Clears the source PDF file and attachment PDF files."""
-        self.source_pdf_entry.delete(0, END)
-        self.attachment_listbox.delete(0, END)
+        if len(self.source_pdf_entry.get())>0:
+            self.source_pdf_entry.delete(0, tk.END)
+        self.clear_attachments()
+        self.generate_pdf_button['state'] = tk.DISABLED
 
-    def clear_attachments(self):
+    def clear_attachments(self, event=None):
         """Clears the attachment PDF files."""
-        self.attachment_listbox.delete(0, END)
+        if len(self.attachment_listbox.get(0, tk.END)):
+            self.attachment_listbox.delete(0, tk.END)
 
     def delete_attachment(self, event):
         """Deletes the selected attachment PDF file."""
-        self.attachment_listbox.delete(ANCHOR)
+        self.attachment_listbox.delete(tk.ANCHOR)
 
-    def generate_pdf(self):
+    def generate_pdf(self, event=None):
         """
         Generates a new PDF file with the selected source PDF file and attachment PDF files.
         """
@@ -212,7 +274,7 @@ class PdfAttachmentApp:
         except Exception as e:
             pass
 
-
-root = Tk()
-my_gui = PdfAttachmentApp(root)
-root.mainloop()
+if __name__ == "__main__":
+    root = tk.Tk()
+    my_gui = PdfAttachmentApp(root)
+    root.mainloop()
