@@ -101,7 +101,7 @@ class PdfAttachmentApp:
             width=40,
             padx=self.padding,
             pady=self.padding,
-            state=tk.D,
+            state=tk.NORMAL,
         )
         self.generate_pdf_button.grid(row=4, column=1)
 
@@ -219,8 +219,8 @@ class PdfAttachmentApp:
                 with open(attachment_filename, "rb") as pdf:
                     self.writer.add_attachment(attachment_filename, pdf.read())
                 
-        self.clear_attachments_button(0, state=tk.NORMAL)
-        self.file_menu.entryconfig(0, state=tk.NORMAL)
+        # self.clear_attachments_button(0, state=tk.NORMAL)
+        # self.file_menu.entryconfig(0, state=tk.NORMAL)
 
     def clear_all(self, event=None):
         """Clears the source PDF file and attachment PDF files."""
