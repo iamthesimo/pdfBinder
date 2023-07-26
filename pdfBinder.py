@@ -101,7 +101,7 @@ class PdfAttachmentApp:
             width=40,
             padx=self.padding,
             pady=self.padding,
-            state=tk.NORMAL,
+            state=tk.DISABLED,
         )
         self.generate_pdf_button.grid(row=4, column=1)
 
@@ -112,20 +112,20 @@ class PdfAttachmentApp:
             width=15,
             padx=self.padding,
             pady=self.padding,
-            state=tk.NORMAL,
+            state=tk.DISABLED,
         )
         self.clear_attachments_button.grid(row=3, column=2)
 
-        self.clear_button = tk.Button(
+        self.clear_all_button = tk.Button(
             root,
             text="Clear All",
             command=self.clear_all,
             width=15,
             padx=self.padding,
             pady=self.padding,
-            state=tk.NORMAL,
+            state=tk.DISABLED,
         )
-        self.clear_button.grid(row=4, column=2)
+        self.clear_all_button.grid(row=4, column=2)
 
         self.attachment_list = []
         self.source_pdf_filename = ""
@@ -137,8 +137,8 @@ class PdfAttachmentApp:
         self.root.bind("<Escape>", self.on_exit)
         self.root.bind("<Return>", self.generate_pdf)
         self.root.bind("<Control_L><s>", self.select_source_pdf)
-        self.root.bind("<Control_L><d>", self.clear_all)
-        self.root.bind("<Control_L><Shift_L><d>", self.clear_attachments)
+        self.root.bind("<Control_L><d>", self.clear_attachments)
+        self.root.bind("<Control_L><Shift_L><D>", self.clear_all)
         self.root.bind("<Control_L><a>", self.select_attachments)
 
     def mouse_wheel(self, event=None):
@@ -151,14 +151,14 @@ class PdfAttachmentApp:
         # File menu
         self.file_menu = tk.Menu(self.menu_bar, tearoff=0)
         self.menu_bar.add_cascade(label="File", menu=self.file_menu)
-        self.file_menu.add_command(label="Select PDF", command=self.select_source_pdf, accelerator="Ctrl+S")
-        self.file_menu.add_command(label="Select attachments", command=self.select_attachments, accelerator="Ctrl+A")
+        self.file_menu.add_command(label="Select PDF", command=self.select_source_pdf, accelerator="Ctrl+S") # index 0
+        self.file_menu.add_command(label="Select attachments", command=self.select_attachments, accelerator="Ctrl+A") # index 1
         self.file_menu.add_separator()
-        self.file_menu.add_command(label="Generate PDF", command=self.generate_pdf, accelerator="Enter", state=tk.NORMAL)
-        self.file_menu.add_command(label="Clear attachments", command=self.clear_attachments,accelerator="Ctrl+D", state=tk.NORMAL)
-        self.file_menu.add_command(label="Clear all", command=self.clear_all, accelerator="Ctrl+Shift+D", state=tk.NORMAL)
+        self.file_menu.add_command(label="Generate PDF", command=self.generate_pdf, accelerator="Enter", state=tk.DISABLED) # index 2
+        self.file_menu.add_command(label="Clear attachments", command=self.clear_attachments,accelerator="Ctrl+D", state=tk.DISABLED) # index 3
+        self.file_menu.add_command(label="Clear all", command=self.clear_all, accelerator="Ctrl+Shift+D", state=tk.DISABLED) # index 4
         self.file_menu.add_separator()
-        self.file_menu.add_command(label="Exit", command=self.on_exit, accelerator="Esc")
+        self.file_menu.add_command(label="Exit", command=self.on_exit, accelerator="Esc") # index 5
 
         # Help menu
         self.help_menu = tk.Menu(self.menu_bar, tearoff=0)
@@ -193,6 +193,9 @@ class PdfAttachmentApp:
             self.source_pdf_entry.delete(0, tk.END)
             self.source_pdf_entry.insert(0, self.source_pdf_filename.rsplit("/", 1)[1])
         self.generate_pdf_button['state'] = tk.NORMAL
+        self.file_menu.entryconfig("Generate PDF", state=tk.NORMAL)
+        self.file_menu.entryconfig("Clear all", state=tk.NORMAL)
+        self.clear_all_button['state'] = tk.NORMAL
 
     def select_attachments(self, event=None):
         """
@@ -207,10 +210,13 @@ class PdfAttachmentApp:
                 for attachment in attachment_filename:
                     self.attachment_list.append(attachment)
                     self.attachment_listbox.insert(tk.END, attachment.rsplit("/", 1)[1])
+        
+            self.clear_attachments_button['state'] = tk.NORMAL
+            self.file_menu.entryconfig("Clear attachments", state=tk.NORMAL)
         except Exception as e:
             pass
 
-    def add_attachment(self, event=None):
+    def add_attachment(self):
         """
         Adds the selected attachment PDF files to the writer object.
         """
@@ -218,9 +224,8 @@ class PdfAttachmentApp:
             for attachment_filename in self.attachment_list:
                 with open(attachment_filename, "rb") as pdf:
                     self.writer.add_attachment(attachment_filename, pdf.read())
+        
                 
-        # self.clear_attachments_button(0, state=tk.NORMAL)
-        # self.file_menu.entryconfig(0, state=tk.NORMAL)
 
     def clear_all(self, event=None):
         """Clears the source PDF file and attachment PDF files."""
@@ -228,11 +233,18 @@ class PdfAttachmentApp:
             self.source_pdf_entry.delete(0, tk.END)
         self.clear_attachments()
         self.generate_pdf_button['state'] = tk.DISABLED
+        self.clear_all_button['state'] = tk.DISABLED
+        self.file_menu.entryconfig("Generate PDF", state=tk.DISABLED)
+        self.file_menu.entryconfig("Clear all", state=tk.DISABLED)
+        self.file_menu.entryconfig("Clear attachments", state=tk.DISABLED)
 
     def clear_attachments(self, event=None):
         """Clears the attachment PDF files."""
         if len(self.attachment_listbox.get(0, tk.END)):
             self.attachment_listbox.delete(0, tk.END)
+        
+        self.clear_attachments_button['state'] = tk.DISABLED
+        self.file_menu.entryconfig("Clear attachments", state=tk.DISABLED)
 
     def delete_attachment(self, event):
         """Deletes the selected attachment PDF file."""
