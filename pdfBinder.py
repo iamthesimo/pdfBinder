@@ -140,6 +140,7 @@ class PdfAttachmentApp:
         self.root.bind("<Control_L><d>", self.clear_attachments)
         self.root.bind("<Control_L><Shift_L><D>", self.clear_all)
         self.root.bind("<Control_L><a>", self.select_attachments)
+        self.root.unbindall()
 
     def mouse_wheel(self, event=None):
         self.attachment_listbox.yview_scroll(-1, "units")
@@ -152,7 +153,7 @@ class PdfAttachmentApp:
         self.file_menu = tk.Menu(self.menu_bar, tearoff=0)
         self.menu_bar.add_cascade(label="File", menu=self.file_menu)
         self.file_menu.add_command(label="Select PDF", command=self.select_source_pdf, accelerator="Ctrl+S") # index 0
-        self.file_menu.add_command(label="Select attachments", command=self.select_attachments, accelerator="Ctrl+A") # index 1
+        self.file_menu.add_command(label="Select attachments", command=self.select_attachments, accelerator="Ctrl+A", ) # index 1
         self.file_menu.add_separator()
         self.file_menu.add_command(label="Generate PDF", command=self.generate_pdf, accelerator="Enter", state=tk.DISABLED) # index 2
         self.file_menu.add_command(label="Clear attachments", command=self.clear_attachments,accelerator="Ctrl+D", state=tk.DISABLED) # index 3
@@ -284,7 +285,7 @@ class PdfAttachmentApp:
                 f"The PDF file {destination_pdf.rsplit('/', 1)[1]} has been generated successfully!",
             )
         except Exception as e:
-            pass
+            print(Exception)
 
 if __name__ == "__main__":
     root = tk.Tk()
