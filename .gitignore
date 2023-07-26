@@ -1,5 +1,5 @@
 venv/
 build/
 .vscode/
-.gitgnore
 pdfBinder.spec
+.gitignore
