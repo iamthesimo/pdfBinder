@@ -10,7 +10,7 @@ pdfBinder is the perfect tool for anyone who needs to attach files to PDF
 """
 
 import tkinter as tk
-from tkinter import filedialog, messagebox, ttk
+from tkinter import filedialog, messagebox, ttk, PhotoImage
 
 from tkinter.filedialog import asksaveasfilename
 from pypdf import PdfWriter, PdfReader
@@ -22,6 +22,7 @@ class PdfAttachmentApp:
     __APPLICATION_VERSION__ = "1.0.0"
     __APPLICATION_NAME__ = "pdfBinder"
     __APPLICATION_ICON__ = "pdf-icon.ico"
+    __APPLICATION_IMAGE__ = "pdf-icon.ico"
     __ABOUT_IMAGE__ = "pdf-icon.ico"
     __ABOUT_SHORT_TXT__ = f"{__APPLICATION_NAME__} V.{__APPLICATION_VERSION__}"
     __DEVELOPER_NAME__ = "Simone Santonoceto"
@@ -41,7 +42,7 @@ class PdfAttachmentApp:
         self.root = root
         self.padding = 3
         self.root.title("pdfBinder")
-        # self.root.iconbitmap(self.__APPLICATION_ICON__)
+        # self.root.iconbitmap(self.__APPLICATION_IMAGE__)
         self.root.resizable(False, False)
 
         self.create_menu()
