@@ -41,7 +41,7 @@ class PdfAttachmentApp:
         self.root = root
         self.padding = 3
         self.root.title("pdfBinder")
-        self.root.iconbitmap(self.__APPLICATION_ICON__)
+        # self.root.iconbitmap(self.__APPLICATION_ICON__)
         self.root.resizable(False, False)
 
         self.create_menu()
