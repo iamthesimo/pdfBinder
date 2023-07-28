@@ -18,8 +18,7 @@ from pypdf import PdfWriter, PdfReader
 class PdfAttachmentApp:
     """Class implementation of SteINTE - BLE ATE application"""
 
-    # Application constants
-
+    # region Application constants
     __APPLICATION_VERSION__ = "1.0.0"
     __APPLICATION_NAME__ = "pdfBinder"
     __APPLICATION_ICON__ = "pdf-icon.ico"
@@ -27,18 +26,10 @@ class PdfAttachmentApp:
     __ABOUT_SHORT_TXT__ = f"{__APPLICATION_NAME__} V.{__APPLICATION_VERSION__}"
     __DEVELOPER_NAME__ = "Simone Santonoceto"
     __DEVELOPER_CONTACTS__ = "simone.santonoceto@gmail.com"
-    __ABOUT_DETAILED_TXT__ = (
-        f"{__ABOUT_SHORT_TXT__} {__DEVELOPER_NAME__} {__DEVELOPER_CONTACTS__}"
-    )
+    __ABOUT_DETAILED_TXT__ = f"{__ABOUT_SHORT_TXT__} {__DEVELOPER_NAME__} {__DEVELOPER_CONTACTS__}"
     __APPLICATION_COPYRIGHT__ = "GNU GPL v3.0"
-    __APPLICATION_INFOS__ = "\n".join(
-        [
-            __ABOUT_SHORT_TXT__,
-            __DEVELOPER_NAME__,
-            __DEVELOPER_CONTACTS__,
-            __APPLICATION_COPYRIGHT__,
-        ]
-    )
+    __APPLICATION_INFOS__ = "\n".join([__ABOUT_SHORT_TXT__,__DEVELOPER_NAME__,__DEVELOPER_CONTACTS__,__APPLICATION_COPYRIGHT__,])
+    # endregion
 
     def __init__(self, root):
         """
@@ -48,12 +39,13 @@ class PdfAttachmentApp:
         - master: the Tkinter master object.
         """
         self.root = root
-        self.padding = 5
+        self.padding = 3
         self.root.title("pdfBinder")
+        self.root.iconbitmap(self.__APPLICATION_ICON__)
         self.root.resizable(False, False)
 
         self.create_menu()
-        self.create_top_area()        
+        self.create_main_area()        
     
     # GUI creation methods
     def create_menu(self, event=None):
@@ -78,7 +70,8 @@ class PdfAttachmentApp:
         self.help_menu.add_command(label="Help", command=self.on_help, accelerator="F1")
         self.help_menu.add_command(label="About", command=self.on_about)
 
-    def create_top_area(self):
+    def create_main_area(self):
+        ''' Creates the top area of the GUI '''
         self.source_pdf_label = ttk.Label(root, text="Source PDF:", width=15)
         self.source_pdf_label.grid(row=0, column=0)
 
@@ -150,7 +143,6 @@ class PdfAttachmentApp:
         
         # Key bindings
         self.root.bind("<F1>", self.on_help)
-        self.root.bind("<F2>", self.on_about)
         self.root.bind("<Escape>", self.on_exit)
         self.root.bind("<Control_L><s>", self.select_source_pdf)
         self.root.bind("<Control_L><a>", self.select_attachments)
@@ -168,7 +160,7 @@ class PdfAttachmentApp:
   - Clear attachments to clear the attachment."""
         messagebox.showinfo("Help", help_text,type="ok")
 
-    def on_about(self, event=None):
+    def on_about(self):
         about_text = self.__APPLICATION_INFOS__
         messagebox.showinfo("About", about_text)
 
