@@ -15,7 +15,6 @@ from tkinter import filedialog, messagebox, ttk
 from tkinter.filedialog import asksaveasfilename
 from pypdf import PdfWriter, PdfReader
 
-
 class PdfAttachmentApp:
     """Class implementation of SteINTE - BLE ATE application"""
 
@@ -32,7 +31,6 @@ class PdfAttachmentApp:
         f"{__ABOUT_SHORT_TXT__} {__DEVELOPER_NAME__} {__DEVELOPER_CONTACTS__}"
     )
     __APPLICATION_COPYRIGHT__ = "GNU GPL v3.0"
-
     __APPLICATION_INFOS__ = "\n".join(
         [
             __ABOUT_SHORT_TXT__,
@@ -56,6 +54,29 @@ class PdfAttachmentApp:
 
         self.create_menu()
         self.create_top_area()        
+    
+    # GUI creation methods
+    def create_menu(self, event=None):
+        self.menu_bar = tk.Menu(self.root)
+        self.root.config(menu=self.menu_bar)
+
+        # File menu
+        self.file_menu = tk.Menu(self.menu_bar, tearoff=0)
+        self.menu_bar.add_cascade(label="File", menu=self.file_menu)
+        self.file_menu.add_command(label="Select PDF", command=self.select_source_pdf, accelerator="Ctrl+S") # index 0
+        self.file_menu.add_command(label="Select attachments", command=self.select_attachments, accelerator="Ctrl+A", ) # index 1
+        self.file_menu.add_separator()
+        self.file_menu.add_command(label="Generate PDF", command=self.generate_pdf, accelerator="Enter", state=tk.DISABLED) # index 2
+        self.file_menu.add_command(label="Clear attachments", command=self.clear_attachments,accelerator="Ctrl+D", state=tk.DISABLED) # index 3
+        self.file_menu.add_command(label="Clear all", command=self.clear_all, accelerator="Ctrl+Shift+D", state=tk.DISABLED) # index 4
+        self.file_menu.add_separator()
+        self.file_menu.add_command(label="Exit", command=self.on_exit, accelerator="Esc") # index 5
+
+        # Help menu
+        self.help_menu = tk.Menu(self.menu_bar, tearoff=0)
+        self.menu_bar.add_cascade(label="Help", menu=self.help_menu)
+        self.help_menu.add_command(label="Help", command=self.on_help, accelerator="F1")
+        self.help_menu.add_command(label="About", command=self.on_about)
 
     def create_top_area(self):
         self.source_pdf_label = ttk.Label(root, text="Source PDF:", width=15)
@@ -87,12 +108,8 @@ class PdfAttachmentApp:
         )
         self.attachment_button.grid(row=1, column=2)
 
-        self.attachment_listbox = tk.Listbox(root, width=50)
+        self.attachment_listbox = tk.Listbox(root, width=50, yscrollcommand=1)
         self.attachment_listbox.grid(row=1, column=1)
-        self.attachment_listbox.bind("<Double-Button-1>", self.delete_attachment)
-        self.attachment_listbox.bind("<Delete>", self.delete_attachment)
-        self.attachment_listbox.bind("<BackSpace>", self.delete_attachment)
-        self.attachment_listbox.bind("<MouseWheel>", self.mouse_wheel)
 
         self.generate_pdf_button = tk.Button(
             root,
@@ -135,38 +152,10 @@ class PdfAttachmentApp:
         self.root.bind("<F1>", self.on_help)
         self.root.bind("<F2>", self.on_about)
         self.root.bind("<Escape>", self.on_exit)
-        self.root.bind("<Return>", self.generate_pdf)
         self.root.bind("<Control_L><s>", self.select_source_pdf)
-        self.root.bind("<Control_L><d>", self.clear_attachments)
-        self.root.bind("<Control_L><Shift_L><D>", self.clear_all)
         self.root.bind("<Control_L><a>", self.select_attachments)
-        self.root.unbindall()
 
-    def mouse_wheel(self, event=None):
-        self.attachment_listbox.yview_scroll(-1, "units")
-
-    def create_menu(self, event=None):
-        self.menu_bar = tk.Menu(self.root)
-        self.root.config(menu=self.menu_bar)
-
-        # File menu
-        self.file_menu = tk.Menu(self.menu_bar, tearoff=0)
-        self.menu_bar.add_cascade(label="File", menu=self.file_menu)
-        self.file_menu.add_command(label="Select PDF", command=self.select_source_pdf, accelerator="Ctrl+S") # index 0
-        self.file_menu.add_command(label="Select attachments", command=self.select_attachments, accelerator="Ctrl+A", ) # index 1
-        self.file_menu.add_separator()
-        self.file_menu.add_command(label="Generate PDF", command=self.generate_pdf, accelerator="Enter", state=tk.DISABLED) # index 2
-        self.file_menu.add_command(label="Clear attachments", command=self.clear_attachments,accelerator="Ctrl+D", state=tk.DISABLED) # index 3
-        self.file_menu.add_command(label="Clear all", command=self.clear_all, accelerator="Ctrl+Shift+D", state=tk.DISABLED) # index 4
-        self.file_menu.add_separator()
-        self.file_menu.add_command(label="Exit", command=self.on_exit, accelerator="Esc") # index 5
-
-        # Help menu
-        self.help_menu = tk.Menu(self.menu_bar, tearoff=0)
-        self.menu_bar.add_cascade(label="Help", menu=self.help_menu)
-        self.help_menu.add_command(label="Help", command=self.on_help, accelerator="F1")
-        self.help_menu.add_command(label="About", command=self.on_about)
-
+    # Event handlers
     def on_exit(self, event=None):
         self.root.destroy()
 
@@ -183,6 +172,7 @@ class PdfAttachmentApp:
         about_text = self.__APPLICATION_INFOS__
         messagebox.showinfo("About", about_text)
 
+    # Buttons handlers
     def select_source_pdf(self, event=None):
         """
         Opens a file dialog to select the source PDF file.
@@ -197,6 +187,8 @@ class PdfAttachmentApp:
         self.file_menu.entryconfig("Generate PDF", state=tk.NORMAL)
         self.file_menu.entryconfig("Clear all", state=tk.NORMAL)
         self.clear_all_button['state'] = tk.NORMAL
+        self.root.bind("<Return>", self.generate_pdf)
+        self.root.bind("<Control_L><Shift_L><D>", self.clear_all)
 
     def select_attachments(self, event=None):
         """
@@ -214,10 +206,15 @@ class PdfAttachmentApp:
         
             self.clear_attachments_button['state'] = tk.NORMAL
             self.file_menu.entryconfig("Clear attachments", state=tk.NORMAL)
+            self.root.bind("<Control_L><d>", self.clear_attachments)
+            self.attachment_listbox.bind("<Double-Button-1>", self.delete_attachment)
+            self.attachment_listbox.bind("<Delete>", self.delete_attachment)
+            self.attachment_listbox.bind("<BackSpace>", self.delete_attachment)
+            self.attachment_listbox.bind("<MouseWheel>", lambda event: self.attachment_listbox.yview_scroll(-1, "units"))
         except Exception as e:
             pass
 
-    def add_attachment(self):
+    def insert_attachments(self):
         """
         Adds the selected attachment PDF files to the writer object.
         """
@@ -225,8 +222,6 @@ class PdfAttachmentApp:
             for attachment_filename in self.attachment_list:
                 with open(attachment_filename, "rb") as pdf:
                     self.writer.add_attachment(attachment_filename, pdf.read())
-        
-                
 
     def clear_all(self, event=None):
         """Clears the source PDF file and attachment PDF files."""
@@ -238,6 +233,8 @@ class PdfAttachmentApp:
         self.file_menu.entryconfig("Generate PDF", state=tk.DISABLED)
         self.file_menu.entryconfig("Clear all", state=tk.DISABLED)
         self.file_menu.entryconfig("Clear attachments", state=tk.DISABLED)
+        self.root.unbind("<Return>")
+        self.root.unbind("<Control_L><Shift_L><D>")
 
     def clear_attachments(self, event=None):
         """Clears the attachment PDF files."""
@@ -246,6 +243,11 @@ class PdfAttachmentApp:
         
         self.clear_attachments_button['state'] = tk.DISABLED
         self.file_menu.entryconfig("Clear attachments", state=tk.DISABLED)
+        self.root.unbind("<Control_L><d>")
+        self.attachment_listbox.unbind("<Double-Button-1>")
+        self.attachment_listbox.unbind("<Delete>")
+        self.attachment_listbox.unbind("<BackSpace>")
+        self.attachment_listbox.unbind("<MouseWheel>")
 
     def delete_attachment(self, event):
         """Deletes the selected attachment PDF file."""
@@ -264,7 +266,7 @@ class PdfAttachmentApp:
 
             self.writer.clone_document_from_reader(self.reader)
 
-            self.add_attachment()
+            self.insert_attachments()
             source_pdf = self.source_pdf_filename.rsplit("/", 1)[1]
             source_folder = self.source_pdf_filename.rsplit("/", 1)[0]
 
