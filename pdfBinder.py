@@ -73,14 +73,14 @@ class PdfAttachmentApp:
 
     def create_main_area(self):
         ''' Creates the top area of the GUI '''
-        self.source_pdf_label = ttk.Label(root, text="Source PDF:", width=15)
+        self.source_pdf_label = ttk.Label(self.root, text="Source PDF:", width=15)
         self.source_pdf_label.grid(row=0, column=0)
 
-        self.source_pdf_entry = tk.Entry(root, width=50)
+        self.source_pdf_entry = tk.Entry(self.root, width=50)
         self.source_pdf_entry.grid(row=0, column=1)
 
         self.source_pdf_button = tk.Button(
-            root,
+            self.root,
             text="Select file",
             command=self.select_source_pdf,
             width=15,
@@ -89,11 +89,11 @@ class PdfAttachmentApp:
         )
         self.source_pdf_button.grid(row=0, column=2)
 
-        self.attachment_label = tk.Label(root, text="Attachments:", width=15)
+        self.attachment_label = tk.Label(self.root, text="Attachments:", width=15)
         self.attachment_label.grid(row=1, column=0)
 
         self.attachment_button = tk.Button(
-            root,
+            self.root,
             text="Select file",
             command=self.select_attachments,
             width=15,
@@ -102,11 +102,11 @@ class PdfAttachmentApp:
         )
         self.attachment_button.grid(row=1, column=2)
 
-        self.attachment_listbox = tk.Listbox(root, width=50, yscrollcommand=1)
+        self.attachment_listbox = tk.Listbox(self.root, width=50, yscrollcommand=1)
         self.attachment_listbox.grid(row=1, column=1)
 
         self.generate_pdf_button = tk.Button(
-            root,
+            self.root,
             text="Generate PDF",
             command=self.generate_pdf,
             width=40,
@@ -117,7 +117,7 @@ class PdfAttachmentApp:
         self.generate_pdf_button.grid(row=4, column=1)
 
         self.clear_attachments_button = tk.Button(
-            root,
+            self.root,
             text="Clear Attachments",
             command=self.clear_attachments,
             width=15,
@@ -128,7 +128,7 @@ class PdfAttachmentApp:
         self.clear_attachments_button.grid(row=3, column=2)
 
         self.clear_all_button = tk.Button(
-            root,
+            self.root,
             text="Clear All",
             command=self.clear_all,
             width=15,
