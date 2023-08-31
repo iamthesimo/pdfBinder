@@ -3,3 +3,4 @@ build/
 .vscode/
 pdfBinder.spec
 .gitignore
+pdfBinder.code-workspace
