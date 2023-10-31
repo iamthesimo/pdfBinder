@@ -4,3 +4,6 @@ build/
 pdfBinder.spec
 .gitignore
 pdfBinder.code-workspace
+test.py
+input.pdf
+output.pdf

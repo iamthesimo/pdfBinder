@@ -15,6 +15,9 @@ from tkinter import filedialog, messagebox, ttk, PhotoImage
 from tkinter.filedialog import asksaveasfilename
 from pypdf import PdfWriter, PdfReader
 
+
+from cryptography import *
+
 class PdfAttachmentApp:
     """Class implementation of SteINTE - BLE ATE application"""
 
@@ -40,6 +43,9 @@ class PdfAttachmentApp:
         - master: the Tkinter master object.
         """
         self.root = root
+        self.password = ""
+        self.encoded_password = ""
+        self.hashed_password = ""
         self.padding = 3
         self.root.title("pdfBinder")
         # self.root.iconbitmap(self.__APPLICATION_IMAGE__)
@@ -245,6 +251,24 @@ class PdfAttachmentApp:
     def delete_attachment(self, event):
         """Deletes the selected attachment PDF file."""
         self.attachment_listbox.delete(tk.ANCHOR)
+        
+    def get_password(self) -> str:
+        password_window = tk.Toplevel(self.root)
+        password_window.geometry("250x100")
+        password_window.title("")
+        password_label = tk.Label(password_window, text="Password:",)
+        password_label.pack()
+        password_entry = tk.Entry(password_window, show="*")
+        password_entry.pack()
+        ok_button = tk.Button(password_window, text="OK", command=lambda: self.get_password_callback(password_window, password_entry))
+        ok_button.pack()
+        password_window.wait_window()
+        return self.password
+
+    def get_password_callback(self, password_window, password_entry):
+        self.password = password_entry.get()
+        password_window.destroy()
+        return self.password
 
     def generate_pdf(self, event=None):
         """
@@ -256,6 +280,10 @@ class PdfAttachmentApp:
                 return
             self.writer = PdfWriter()
             self.reader = PdfReader(self.source_pdf_filename)
+            
+            if self.reader.is_encrypted:
+                self.password = self.get_password()
+                self.reader.decrypt(self.password)
 
             self.writer.clone_document_from_reader(self.reader)
 
@@ -272,6 +300,8 @@ class PdfAttachmentApp:
             )
 
             with open(destination_pdf, "wb") as f:
+                if self.password != "":
+                    self.writer.encrypt(self.password, algorithm="AES-256")
                 self.writer.write(f)
 
             self.writer = None
@@ -280,9 +310,10 @@ class PdfAttachmentApp:
                 f"The PDF file {destination_pdf.rsplit('/', 1)[1]} has been generated successfully!",
             )
         except Exception as e:
-            print(Exception)
+            print(e)
 
 if __name__ == "__main__":
     root = tk.Tk()
     my_gui = PdfAttachmentApp(root)
     root.mainloop()
+
