@@ -1,2 +1,2 @@
 import subprocess
-subprocess.call(['pyinstaller', '--onefile', '-i=pdf-icon.ico', '--noconsole', 'pdfBinder.py'])
+subprocess.call(['pyinstaller', '--onefile', '-i=pdf-icon.ico', '--noconsole', 'pdfBinder.py', '--distpath=dist'])
