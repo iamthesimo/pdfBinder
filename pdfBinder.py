@@ -182,6 +182,7 @@ class PdfAttachmentApp:
         if self.source_pdf_filename:
             self.source_pdf_entry.delete(0, tk.END)
             self.source_pdf_entry.insert(0, self.source_pdf_filename.rsplit("/", 1)[1])
+
         self.generate_pdf_button['state'] = tk.NORMAL
         self.file_menu.entryconfig("Generate PDF", state=tk.NORMAL)
         self.file_menu.entryconfig("Clear all", state=tk.NORMAL)
@@ -226,6 +227,8 @@ class PdfAttachmentApp:
         """Clears the source PDF file and attachment PDF files."""
         if len(self.source_pdf_entry.get())>0:
             self.source_pdf_entry.delete(0, tk.END)
+            self.source_pdf_filename = ""
+            
         self.clear_attachments()
         self.generate_pdf_button['state'] = tk.DISABLED
         self.clear_all_button['state'] = tk.DISABLED
@@ -239,6 +242,7 @@ class PdfAttachmentApp:
         """Clears the attachment PDF files."""
         if len(self.attachment_listbox.get(0, tk.END)):
             self.attachment_listbox.delete(0, tk.END)
+            self.attachment_list = []
         
         self.clear_attachments_button['state'] = tk.DISABLED
         self.file_menu.entryconfig("Clear attachments", state=tk.DISABLED)
